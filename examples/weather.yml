@@ -1,0 +1,12 @@
+api_key: 'API KEY HERE'
+base_url: http://api.openweathermap.org/data/2.5/weather?
+fields_to_save:
+	- main:
+		- temp
+		- pressure
+		- humidity
+	- weather:
+		- 0
+			- description
+time_interval: 1
+max_requests: 10
