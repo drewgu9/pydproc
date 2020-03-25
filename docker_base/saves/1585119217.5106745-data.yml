@@ -1,0 +1,35 @@
+base: stations
+clouds:
+  all: 90
+cod: 200
+coord:
+  lat: 47.61
+  lon: -122.33
+dt: 1585118692
+id: 5809844
+main:
+  feels_like: 274.68
+  humidity: 93
+  pressure: 1014
+  temp: 277.22
+  temp_max: 278.71
+  temp_min: 275.93
+name: Seattle
+rain:
+  1h: 1.95
+sys:
+  country: US
+  id: 5692
+  sunrise: 1585058566
+  sunset: 1585103271
+  type: 1
+timezone: -25200
+visibility: 16093
+weather:
+- description: moderate rain
+  icon: 10n
+  id: 501
+  main: Rain
+wind:
+  deg: 120
+  speed: 1.5

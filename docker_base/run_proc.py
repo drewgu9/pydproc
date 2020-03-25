@@ -37,11 +37,15 @@ def filter_data(data, fields):
 
     :param data: dict of data
     :param fields: graph representing the keys/indexes to be saved
-    :return: new data with unnecessary fields cropped.
     """
 
     # TODO: Implement recursive solution, see examples/weather.yml for fields example
-    return {}
+    to_filter = []
+    while len(to_filter) > 0:
+        next = to_filter.pop()
+
+        if isinstance(next, dict):
+            return
 
 def main():
     # Load specs from file
@@ -63,7 +67,7 @@ def main():
         new_data = get_data(complete_url)
 
         # Save data to file
-        with open(f"{time.time()}-data.yml", "w+") as f:
+        with open(f"saves/{time.time()}-data.yml", "w+") as f:
             f.write(yaml.dump(new_data))
 
         # Wait for next time interval
