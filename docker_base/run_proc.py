@@ -39,7 +39,7 @@ def filter_data(data, fields):
     :param fields: graph representing the keys/indexes to be saved
     """
 
-    # TODO: Implement recursive solution, see examples/weather.yml for fields example
+    # TODO: Implement function, see examples/weather.yml for fields example
     to_filter = []
     while len(to_filter) > 0:
         next = to_filter.pop()
