@@ -5,6 +5,7 @@ import shutil
 
 
 def make_docker_dir(specs):
+    # TODO use glob to find docker_base folder
     docker_base_path = os.path.abspath("../docker_base")
     new_image_path = Path(os.path.abspath(f"../saved_images/{specs['proc_name']}"))
 
