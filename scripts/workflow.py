@@ -27,7 +27,7 @@ def make_docker_dir(specs):
         f.write(run_script)
 
 
-def start_workflow(spec_file):
+def start(spec_file):
     spec_file = Path(os.path.abspath(spec_file))
 
     # Check if spec file exists
@@ -42,8 +42,24 @@ def start_workflow(spec_file):
     # Make new docker dir
     make_docker_dir(specs)
 
+    # TODO build docker container from docker dir
+    # TODO start docker container and mount saves folder
+
     return
+
+def stop(proc_name):
+    # TODO stop docker containers with image with name proc_name
+    pass
+
+def restart(proc_name):
+    # TODO stop docker containers with image with name proc_name
+    pass
+
+def get_data(proc_name, destination):
+    # TODO search saved_images folder for folder with proc_name
+    # TODO copy saves folder to destination
+    pass
 
 
 if __name__ == "__main__":
-    start_workflow("../examples/weather.yml")
+    start("../examples/weather.yml")
