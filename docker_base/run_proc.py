@@ -31,6 +31,7 @@ def get_data(url):
         print("404 Error: url not found.")
         return {}
 
+
 def filter_data(data, fields):
     """
     Removes keys in data that are not part of fields
@@ -46,6 +47,7 @@ def filter_data(data, fields):
 
         if isinstance(next, dict):
             return
+
 
 def main():
     # Load specs from file
