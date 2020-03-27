@@ -3,7 +3,6 @@ import yaml
 import os
 import shutil
 
-
 def make_docker_dir(specs):
     docker_base_path = os.path.abspath("../docker_base")
     new_image_path = Path(os.path.abspath(f"../saved_images/{specs['proc_name']}"))
@@ -44,6 +43,9 @@ def start(spec_file):
 
     # TODO build docker container from docker dir
     # TODO start docker container and mount saves folder
+    build_pathway = os.path.abspath("../saved_images/" + specs['proc_name'])
+    os.system("docker build -t pydproc_weather " + build_pathway)
+    os.system("docker run --rm -v $PWD/saves:/workdir/saves pydproc_weather")
 
     return
 
@@ -63,3 +65,4 @@ def get_data(proc_name, destination):
 
 if __name__ == "__main__":
     start("../examples/weather.yml")
+
