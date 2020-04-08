@@ -60,7 +60,7 @@ def fromyml(spec_file: str):
 
     # TODO build docker container from docker dir
     # TODO start docker container and mount saved_data folder
-    build_pathway = os.path.abspath("./saved_images/" + specs['proc_name'])
+    build_pathway = os.path.abspath(saved_images_path / specs['proc_name'])
     os.system("docker build -t pydproc/weather " + build_pathway)
     # os.system("docker run --rm -v $PWD/saved_data:/workdir/saved_data pydproc_weather")
 
