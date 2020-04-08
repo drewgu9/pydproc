@@ -10,8 +10,8 @@ COPY run_proc.py .
 COPY proc.yml .
 
 # Install dependencies
-RUN pip3 install pyyaml
-RUN pip3 install requests
+RUN pip3 install pyyaml -q
+RUN pip3 install requests -q
 
 # Runs when docker container starts
 ENTRYPOINT [ "python", "./run_proc.py" ]

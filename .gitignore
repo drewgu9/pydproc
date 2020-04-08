@@ -1,3 +1,4 @@
 venv/
 .idea
-saved_images/weather
+saved_images/
+scripts/__pycache__/

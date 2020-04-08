@@ -1,12 +1,22 @@
+# import dependencies
 from pathlib import Path
 import yaml
 import os
 import shutil
+import docker
+
+# non-dependency imports
+from definitions import docker_base_path, saved_images_path, saved_data_path
+
+# load client for docker. This requires user set env variables $DOCKER_USERNAME and $DOCKER_PASSWORD
+client = docker.from_env()
+# Maps image name to containers running it
+containers = {}
 
 def make_docker_dir(specs):
-    # TODO use glob to find docker_base folder
-    docker_base_path = os.path.abspath("../docker_base")
-    new_image_path = Path(os.path.abspath(f"../saved_images/{specs['proc_name']}"))
+    new_image_path = saved_images_path / specs['proc_name']
+    if new_image_path.exists():
+        shutil.rmtree(new_image_path)
 
     # Copy docker dir template
     shutil.copytree(docker_base_path, new_image_path)
@@ -27,7 +37,13 @@ def make_docker_dir(specs):
         f.write(run_script)
 
 
-def start(spec_file):
+def fromyml(spec_file: str):
+    """
+    Build docker image from yml file as input
+
+    :param spec_file: path to spec file
+    :return:
+    """
     spec_file = Path(os.path.abspath(spec_file))
 
     # Check if spec file exists
@@ -43,27 +59,56 @@ def start(spec_file):
     make_docker_dir(specs)
 
     # TODO build docker container from docker dir
-    # TODO start docker container and mount saves folder
-    build_pathway = os.path.abspath("../saved_images/" + specs['proc_name'])
-    os.system("docker build -t pydproc_weather " + build_pathway)
-    os.system("docker run --rm -v $PWD/saves:/workdir/saves pydproc_weather")
+    # TODO start docker container and mount saved_data folder
+    build_pathway = os.path.abspath("./saved_images/" + specs['proc_name'])
+    os.system("docker build -t pydproc/weather " + build_pathway)
+    # os.system("docker run --rm -v $PWD/saved_data:/workdir/saved_data pydproc_weather")
 
-    return
+def start(proc_name: str):
+    """
+    Start docker container and mounts saved_data folder
 
-def stop(proc_name):
-    # TODO stop docker containers with image with name proc_name
+    :param proc_name: name of image in pydproc repo
+    """
+    image_name = f'pydproc/{proc_name}:latest'
+    if not image_name in [i.tags[0] for i in client.images.list() if len(i.tags) > 0]:
+        print(f'ERROR: pydproc/{proc_name} docker image has not been built yet.')
+        return
+
+    if not proc_name in containers.keys():
+        containers[proc_name] = []
+
+    run_name = f'{proc_name}-{len(containers[proc_name])}'
+    new_save_dir = saved_data_path / run_name
+    os.mkdir(new_save_dir)
+
+    print(f'Starting new run {run_name}')
+    container = client.containers.run(image_name, 'python run_proc.py',
+        volumes={str(new_save_dir): {'bind': '/saved_data', 'mode': 'rw'}}, stream=True, detach=True, remove=True)
+    with open(new_save_dir / (run_name + ".log"), "w+") as log_file:
+        log_file.write(str(container.logs()))
+
+    containers[proc_name].append({run_name: container})
+
+def stop(run_name):
+    # TODO parse run_name for proc_name
+    # TODO stop the container in containers[proc_name][run_name]
     pass
 
-def restart(proc_name):
-    # TODO stop docker containers with image with name proc_name
+def restart(run_name):
+    # TODO parse run_name for proc_name
+    # TODO stop the container in containers[proc_name][run_name]
     pass
 
-def get_data(proc_name, destination):
-    # TODO search saved_images folder for folder with proc_name
-    # TODO copy saves folder to destination
+def get_data(run_name, destination):
+    # TODO search saved_data_path for run_name and shutil.copytree() it to destination
     pass
 
 
 if __name__ == "__main__":
-    start("../examples/weather.yml")
+    # TODO Uncomment this for when we create cli
+    # globals()[sys.argv[1]]()
+
+    fromyml("./examples/weather.yml")
+    start("weather")
 

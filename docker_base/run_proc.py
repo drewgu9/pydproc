@@ -1,4 +1,6 @@
-# process that runs inside docker container
+# this is the python script that runs inside docker container
+
+# import dependencies
 import yaml
 import requests, json
 import time
@@ -69,7 +71,7 @@ def main():
         new_data = get_data(complete_url)
 
         # Save data to file
-        with open(f"saves/{time.time()}-data.yml", "w+") as f:
+        with open(f"/saved_data/{time.time()}-data.yml", "w+") as f:
             f.write(yaml.dump(new_data))
 
         # Wait for next time interval
