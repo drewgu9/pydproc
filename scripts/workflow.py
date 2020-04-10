@@ -170,7 +170,3 @@ if __name__ == "__main__":
 
     fromyml("./examples/weather.yml")
     start("weather")
-    start("weather")
-    start("weather")
-    remove("weather-0")
-    start("weather")
