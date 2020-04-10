@@ -12,6 +12,8 @@ from definitions import docker_base_path, saved_images_path, saved_data_path
 client = docker.from_env()
 # Maps image name to containers running it
 containers = {}
+# Defines default values for YAML file
+default_values = {'api_key':'a4b7b2df254a30de3f19c89b8f8be2b9', 'city_name': 'Seattle'}
 
 def make_docker_dir(specs):
     new_image_path = saved_images_path / specs['proc_name']
@@ -106,6 +108,63 @@ def restart(run_name):
 def get_data(run_name, destination):
     # TODO search saved_data_path for run_name and shutil.copytree() it to destination
     pass
+
+def validate(path):
+    with open(path) as f:
+        ymlspecs = yaml.safe_load(f)
+
+    base_url = ymlspecs['base_url']
+    url_params = list(ymlspecs['url_params'].keys())
+    desired_params = []
+
+    for i in range(0, len(base_url)):
+        if base_url[i] == '{':
+            i += 1
+            in1 = i
+            while base_url[i] != '}':
+                i += 1
+            in2 = i
+            desired_params.append(base_url[in1:in2])
+
+    # TODO: update yaml file with any changed parameters if required
+    while len(url_params) != 0:
+        try:
+            c1 = desired_params.pop(0)
+            c2 = url_params.pop(0)
+        except:
+            print('WARNING: Missing required URL parameters.')
+            while len(url_params) != 0:
+                cur = url_params.pop(0)
+                print('Filling in ' + cur + 'with default value ' + default_values[cur])
+        if desired_params.pop(0) != url_params.pop(0):
+              print('WARNING: incorrect paramters, replacing ' + c1 + ' with ' + c2 + 'with default value ' + default_values[c2]) 
+
+    while len(desired_params) != 0:
+        print("WARNING: unused parameter " + desired_params.pop(0))
+    
+    api_call = requests.get(base_url.format(**ymlspecs['url_params'])).json()
+    desired_fields = ymlspecs['fields_to_save']
+    print('Validating data...')
+    __recur_fields(desired_fields, api_call)
+    print('Validation passed with no errors.')
+                      
+def __recur_fields(desired_fields, api_call):
+    for element in desired_fields:
+        if isinstance(element, dict):
+            keys = list(element.keys())
+            try:
+                for k in keys:
+                    cur1 = element[k]
+                    cur2 = api_call[k]
+                    __recur_fields(cur1, cur2)
+            except:
+                raise Exception('WARNING: Incorrect desired data')
+        else:
+            for l in desired_fields:
+                if l not in api_call:
+                    print(desired_fields)
+                    print(api_call)
+                    raise Exception('WARNING: desired data ' + l + ' not present in desired data')
 
 
 if __name__ == "__main__":
