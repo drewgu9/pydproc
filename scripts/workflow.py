@@ -133,8 +133,6 @@ def validate(path):
             in2 = i
             desired_params.append(base_url[in1:in2])
 
-    # TODO: update yaml file with any changed parameters if required
-    place = 0
     while len(url_params) != 0:
         try:
             c1 = desired_params.pop(0)
@@ -160,10 +158,10 @@ def validate(path):
         print('Validation passed with no errors.')
     except:
         print('missing fields to save, using all data from api call')
-    with open(path) as f:
+
+    with open(path, 'w') as f:
         f.write(yaml.dump(ymlspecs))
     return ymlspecs
-                      
 
 if __name__ == "__main__":
     # TODO Uncomment this for when we create cli
