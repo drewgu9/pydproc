@@ -19,18 +19,23 @@ def __recur_fields(desired_fields, api_call):
                     raise Exception('WARNING: desired data ' + l + ' not present in desired data')
 
 
-def __recur_fields(data, fields):
-    for element in data_fields:
-        if isinstance(element, dict):
-            working_keys = list(element.keys())
-            cur_keys = list(fields.keys())
-            for key in working_keys:
+def __scrap_fields(data, fields):
+    for element in data:
+        working_keys = list(element.keys())
+        cur_keys = list(fields.keys())
+        for key in working_keys:
+            if not isinstance(data[key], dict):
+                if key not in cur_keys:
+                    del data[key]
+            else:
                 if key in cur_keys:
-                    __recur_fields(data[key], fields[key])
+                    data = __recur_fields(data[key], fields[key])
                 else:
-                    __recur_fields(data[key], fields)
-        else:
-             
+                    data = __recur_fields(data[key], fields)
+        return data
+            
+            
+
 
             
 

@@ -4,7 +4,7 @@
 import yaml
 import requests, json
 import time
-
+from scripts.utils import __scrap_fields
 
 def load_specs(filename="proc.yml"):
     """
@@ -43,13 +43,7 @@ def filter_data(data, fields):
     """
 
     # TODO: Implement function, see examples/weather.yml for fields example
-    to_filter = fields.keys()
-    
-    while len(to_filter) > 0:
-        next = to_filter.pop()
-
-        if isinstance(next, dict):
-            return
+    return __scrap_fields(data, fields)
 
 
 def main():
