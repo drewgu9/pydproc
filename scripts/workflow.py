@@ -112,6 +112,10 @@ def get_data(run_name, destination):
     pass
 
 def validate(path):
+    """
+    Ensures url_params and fields_to_save specs in yml file are correct and exist when return API data
+    :param path: path to yml file
+    """
     with open(path) as f:
         ymlspecs = yaml.safe_load(f)
 
