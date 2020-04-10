@@ -98,9 +98,10 @@ def start(proc_name: str):
     containers[proc_name].append({run_name: container})
 
 def stop(run_name):
-    # TODO parse run_name for proc_name
-    # TODO stop the container in containers[proc_name][run_name]
-    pass
+    # stop the container in containers[proc_name][run_name]
+    proc_name=run_name[:run_name.rfind('-')]
+    containers[proc_name][run_name].pause()
+    print("Pausing docker container " + run_name)
 
 def restart(run_name):
     # TODO parse run_name for proc_name
