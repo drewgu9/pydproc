@@ -4,6 +4,8 @@ import yaml
 import os
 import shutil
 import docker
+import requests, json 
+from scripts.utils import __recur_fields
 
 # non-dependency imports
 from definitions import docker_base_path, saved_images_path, saved_data_path
@@ -116,6 +118,8 @@ def validate(path):
     base_url = ymlspecs['base_url']
     url_params = list(ymlspecs['url_params'].keys())
     desired_params = []
+    api_call = requests.get(base_url.format(**ymlspecs['url_params'])).json()
+    desired_fields = ymlspecs['fields_to_save']
 
     for i in range(0, len(base_url)):
         if base_url[i] == '{':
@@ -136,35 +140,18 @@ def validate(path):
             while len(url_params) != 0:
                 cur = url_params.pop(0)
                 print('Filling in ' + cur + 'with default value ' + default_values[cur])
+
         if desired_params.pop(0) != url_params.pop(0):
               print('WARNING: incorrect paramters, replacing ' + c1 + ' with ' + c2 + 'with default value ' + default_values[c2]) 
 
     while len(desired_params) != 0:
         print("WARNING: unused parameter " + desired_params.pop(0))
     
-    api_call = requests.get(base_url.format(**ymlspecs['url_params'])).json()
-    desired_fields = ymlspecs['fields_to_save']
+    
     print('Validating data...')
     __recur_fields(desired_fields, api_call)
     print('Validation passed with no errors.')
                       
-def __recur_fields(desired_fields, api_call):
-    for element in desired_fields:
-        if isinstance(element, dict):
-            keys = list(element.keys())
-            try:
-                for k in keys:
-                    cur1 = element[k]
-                    cur2 = api_call[k]
-                    __recur_fields(cur1, cur2)
-            except:
-                raise Exception('WARNING: Incorrect desired data')
-        else:
-            for l in desired_fields:
-                if l not in api_call:
-                    print(desired_fields)
-                    print(api_call)
-                    raise Exception('WARNING: desired data ' + l + ' not present in desired data')
 
 
 if __name__ == "__main__":
