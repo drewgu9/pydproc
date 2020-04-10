@@ -39,11 +39,12 @@ def filter_data(data, fields):
     Removes keys in data that are not part of fields
 
     :param data: dict of data
-    :param fields: graph representing the keys/indexes to be saved
+    :param fields: dict representing the keys/indexes to be saved
     """
 
     # TODO: Implement function, see examples/weather.yml for fields example
-    to_filter = []
+    to_filter = fields.keys()
+    
     while len(to_filter) > 0:
         next = to_filter.pop()
 
