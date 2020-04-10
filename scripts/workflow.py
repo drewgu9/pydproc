@@ -5,7 +5,7 @@ import os
 import shutil
 import docker
 import json, requests 
-from scripts.utils import __recur_fields
+from utils import __recur_fields
 
 # non-dependency imports
 from definitions import docker_base_path, saved_images_path, saved_data_path
@@ -80,7 +80,7 @@ def start(proc_name: str):
         return
 
     if not proc_name in containers.keys():
-        containers[proc_name] = []
+        containers[proc_name] = {}
 
     run_name = f'{proc_name}-{len(containers[proc_name])}'
     new_save_dir = saved_data_path / run_name
@@ -95,7 +95,7 @@ def start(proc_name: str):
     with open(new_save_dir / (run_name + ".log"), "w+") as log_file:
         log_file.write(str(container.logs()))
 
-    containers[proc_name].append({run_name: container})
+    containers[proc_name][run_name] = container
 
 def stop(run_name):
     # stop the container in containers[proc_name][run_name]
