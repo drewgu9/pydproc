@@ -129,26 +129,35 @@ def validate(path):
             desired_params.append(base_url[in1:in2])
 
     # TODO: update yaml file with any changed parameters if required
+    place = 0
     while len(url_params) != 0:
         try:
             c1 = desired_params.pop(0)
             c2 = url_params.pop(0)
+            if desired_params.pop(0) != url_params.pop(0):
+                print('WARNING: incorrect paramters, replacing ' + c1 + ' with ' + c2 + 'with default value ' + default_values[c2]) 
+                ymlspecs[url_params][c2] = default_values[c2]
         except:
             print('WARNING: Missing required URL parameters.')
             while len(url_params) != 0:
                 cur = url_params.pop(0)
                 print('Filling in ' + cur + 'with default value ' + default_values[cur])
-        if desired_params.pop(0) != url_params.pop(0):
-              print('WARNING: incorrect paramters, replacing ' + c1 + ' with ' + c2 + 'with default value ' + default_values[c2]) 
+                ymlspecs[url_params][cur] = default_values[cur]
 
     while len(desired_params) != 0:
         print("WARNING: unused parameter " + desired_params.pop(0))
     
     api_call = requests.get(base_url.format(**ymlspecs['url_params'])).json()
-    desired_fields = ymlspecs['fields_to_save']
-    print('Validating data...')
-    __recur_fields(desired_fields, api_call)
-    print('Validation passed with no errors.')
+    try:
+        desired_fields = ymlspecs['fields_to_save']
+        print('Validating data...')
+        __recur_fields(desired_fields, api_call)
+        print('Validation passed with no errors.')
+    except:
+        print('missing fields to save, using all data from api call')
+    with open(path) as f:
+        f.write(yaml.dump(ymlspecs))
+    return ymlspecs
                       
 
 if __name__ == "__main__":
