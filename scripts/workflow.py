@@ -4,6 +4,8 @@ import yaml
 import os
 import shutil
 import docker
+import json, requests 
+from scripts.utils import __recur_fields
 
 # non-dependency imports
 from definitions import docker_base_path, saved_images_path, saved_data_path
@@ -148,24 +150,6 @@ def validate(path):
     __recur_fields(desired_fields, api_call)
     print('Validation passed with no errors.')
                       
-def __recur_fields(desired_fields, api_call):
-    for element in desired_fields:
-        if isinstance(element, dict):
-            keys = list(element.keys())
-            try:
-                for k in keys:
-                    cur1 = element[k]
-                    cur2 = api_call[k]
-                    __recur_fields(cur1, cur2)
-            except:
-                raise Exception('WARNING: Incorrect desired data')
-        else:
-            for l in desired_fields:
-                if l not in api_call:
-                    print(desired_fields)
-                    print(api_call)
-                    raise Exception('WARNING: desired data ' + l + ' not present in desired data')
-
 
 if __name__ == "__main__":
     # TODO Uncomment this for when we create cli
