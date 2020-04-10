@@ -6,7 +6,7 @@ import shutil
 import docker
 
 # non-dependency imports
-from definitions import docker_base_path, saved_images_path, saved_data_path
+from pydproc.scripts.definitions import docker_base_path, saved_images_path, saved_data_path
 
 # load client for docker. This requires user set env variables $DOCKER_USERNAME and $DOCKER_PASSWORD
 client = docker.from_env()
@@ -60,9 +60,10 @@ def fromyml(spec_file: str):
 
     # TODO build docker container from docker dir
     # TODO start docker container and mount saved_data folder
-    build_pathway = os.path.abspath(saved_images_path / specs['proc_name'])
-    os.system("docker build -t pydproc/weather " + build_pathway)
-    # os.system("docker run --rm -v $PWD/saved_data:/workdir/saved_data pydproc_weather")
+    build_pathway = saved_images_path / specs['proc_name']
+    client.images.build(path=build_pathway, tag=f"pydproc/{specs['proc_name']}")
+
+    # os.system("docker build -t pydproc/weather " + build_pathway)
 
 def start(proc_name: str):
     """
@@ -78,13 +79,18 @@ def start(proc_name: str):
     if not proc_name in containers.keys():
         containers[proc_name] = []
 
+    # Prepare variables and make save directory
     run_name = f'{proc_name}-{len(containers[proc_name])}'
     new_save_dir = saved_data_path / run_name
     os.mkdir(new_save_dir)
 
     print(f'Starting new run {run_name}')
+
+    # Equivalent of running os.system("docker run --rm -v $PWD/saved_data:/workdir/saved_data pydproc_weather")
     container = client.containers.run(image_name, 'python run_proc.py',
         volumes={str(new_save_dir): {'bind': '/saved_data', 'mode': 'rw'}}, stream=True, detach=True, remove=True)
+
+    # Save log file
     with open(new_save_dir / (run_name + ".log"), "w+") as log_file:
         log_file.write(str(container.logs()))
 
