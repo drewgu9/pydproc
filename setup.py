@@ -12,7 +12,7 @@ setup(
    author='Vladimir Oveckin, Robert Burris, Andrew Wu',
    author_email='vladov3000@gmail.com',
    url="https://github.com/vladov3000/pydproc",
-   install_requires=['pyyaml', 'click'], #external packages as dependencies
+   install_requires=['pyyaml', 'click', 'docker'], #external packages as dependencies
    packages=find_packages(),
    include_package_data=True,
     entry_points='''
