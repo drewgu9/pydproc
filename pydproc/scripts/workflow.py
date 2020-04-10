@@ -6,7 +6,7 @@ import shutil
 import docker
 
 # non-dependency imports
-from .definitions import docker_base_path, saved_images_path, saved_data_path
+from pydproc.scripts.definitions import docker_base_path, saved_images_path, saved_data_path
 
 # load client for docker. This requires user set env variables $DOCKER_USERNAME and $DOCKER_PASSWORD
 client = docker.from_env()

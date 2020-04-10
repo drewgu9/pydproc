@@ -1,6 +1,6 @@
 import click
 
-import definitions
+import pydproc.scripts.workflow as workflow
 
 @click.group()
 def pydproc():
