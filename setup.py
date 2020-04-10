@@ -1,4 +1,4 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 
 with open("README.md", 'r') as f:
     long_description = f.read()
@@ -12,9 +12,10 @@ setup(
    author='Vladimir Oveckin, Robert Burris, Andrew Wu',
    author_email='vladov3000@gmail.com',
    url="https://github.com/vladov3000/pydproc",
-   packages=['pydproc'],  #same as name
-   install_requires=['pyyaml'], #external packages as dependencies
-   scripts=[
-            'scripts/workflow.py',
-           ]
+   install_requires=['pyyaml', 'click'], #external packages as dependencies
+   include_package_data=True,
+    entry_points='''
+        [console_scripts]
+        pydproc=pydproc.scripts.cli:cli
+    ''',
 )
