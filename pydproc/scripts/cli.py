@@ -20,6 +20,14 @@ def build(ymlfile):
 def start(proc_name):
     workflow.start(proc_name)
 
+@click.command()
+def ls():
+    # TODO print list of processes with relevant information as table
+    pass
+
+# TODO implement stop, restart
+
+
 # Add all click commands under pydproc group
 pydproc.add_command(build)
 pydproc.add_command(start)
