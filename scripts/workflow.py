@@ -58,11 +58,11 @@ def fromyml(spec_file: str):
     # Make new docker dir
     make_docker_dir(specs)
 
-    # TODO build docker container from docker dir
-    # TODO start docker container and mount saved_data folder
+    # Build and tag new docker image
     build_pathway = os.path.abspath(saved_images_path / specs['proc_name'])
-    os.system("docker build -t pydproc/weather " + build_pathway)
-    # os.system("docker run --rm -v $PWD/saved_data:/workdir/saved_data pydproc_weather")
+    client.images.build(path=build_pathway, tag=f"pydproc/{specs['proc_name']}")
+                        
+    # os.system("docker build -t pydproc/weather " + build_pathway)
 
 def start(proc_name: str):
     """
@@ -85,6 +85,9 @@ def start(proc_name: str):
     print(f'Starting new run {run_name}')
     container = client.containers.run(image_name, 'python run_proc.py',
         volumes={str(new_save_dir): {'bind': '/saved_data', 'mode': 'rw'}}, stream=True, detach=True, remove=True)
+     # os.system("docker run --rm -v $PWD/saved_data:/workdir/saved_data pydproc_weather")
+                        
+    # Save logs
     with open(new_save_dir / (run_name + ".log"), "w+") as log_file:
         log_file.write(str(container.logs()))
 
