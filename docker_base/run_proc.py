@@ -4,7 +4,7 @@
 import yaml
 import requests, json
 import time
-from scripts.utils import __scrap_fields
+from scripts.utils import __scrap_fields, __cleanup
 
 def load_specs(filename="proc.yml"):
     """
@@ -40,10 +40,16 @@ def filter_data(data, fields):
 
     :param data: dict of data
     :param fields: dict representing the keys/indexes to be saved
+    :return: a dict with the parsed data inside
     """
+    clean_data = __cleanup(__scrap_fields(data, fields))
 
-    # TODO: Implement function, see examples/weather.yml for fields example
-    return __scrap_fields(data, fields)
+    fin_data = {}
+    for key in list(clean_data.keys()):
+        if clean_data[key]:
+            fin_data[key] = clean_data[key]
+
+    return fin_data
 
 
 def main():

@@ -114,7 +114,9 @@ def get_data(run_name, destination):
 
 def validate(path):
     """
-    Ensures url_params and fields_to_save specs in yml file are correct and exist when return API data
+    Ensures url_params and fields_to_save specs in yml file are correct and exist when return API
+    data
+    
     :param path: path to yml file
     """
     with open(path) as f:
@@ -153,8 +155,9 @@ def validate(path):
     api_call = requests.get(base_url.format(**ymlspecs['url_params'])).json()
     try:
         desired_fields = ymlspecs['fields_to_save']
+        print(desired_fields)
         print('Validating data...')
-        __recur_fields(desired_fields, api_call)
+        __recur_fields(api_call, desired_fields)
         print('Validation passed with no errors.')
     except:
         print('missing fields to save, using all data from api call')
