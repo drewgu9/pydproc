@@ -9,3 +9,27 @@ Pydproc can be installed using pip:
     pip install pydproc
 
 ## Getting Started
+
+Talk about basic commands here.
+
+## Contributing
+
+Please read [CONTRIBUTING.md](https://gist.github.com/PurpleBooth/b24679402957c63ec426) for details on our code of conduct, and the process for submitting pull requests to us.
+
+## Authors
+
+* **Vladimir Ovechkin** - *project setup, initial work, Managing TODOs, packaging* - University of Washington
+* **Andrew Wu** - *Initial work* - University of Washington
+* **Robert Burris** - *Initial work* - University of Washington
+
+See also the list of [contributors](https://github.com/your/project/contributors) who participated in this project.
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
+
+## Acknowledgments
+
+* Hat tip to anyone whose code was used
+* Inspiration
+* etc
