@@ -4,10 +4,9 @@ import yaml
 import os
 import shutil
 import docker
-import json, requests 
-from utils import __recur_fields
+import json, requests
 
-# non-dependency imports
+# internal imports
 from definitions import docker_base_path, saved_images_path, saved_data_path
 
 # load client for docker. This requires user set env variables $DOCKER_USERNAME and $DOCKER_PASSWORD
