@@ -9,6 +9,7 @@ setup(
     description='A useful module',
     license="MIT",
     long_description=long_description,
+    long_description_content_type='text/markdown',
     author='Vladimir Oveckin, Robert Burris, Andrew Wu',
     author_email='vladov3000@gmail.com',
     url="https://github.com/vladov3000/pydproc",
