@@ -101,7 +101,7 @@ def start(proc_name: str):
     with open(new_save_dir / (run_name + ".log"), "w+") as log_file:
         log_file.write(str(container.logs()))
 
-    containers[proc_name][run_name] = container
+    containers[proc_name][run_name] =  {"container": container, "paused": False}
 
 def stop(run_name):
     """
@@ -111,7 +111,8 @@ def stop(run_name):
     """
     # stop the container in containers[proc_name][run_name]
     proc_name=run_name[:run_name.rfind('-')]
-    containers[proc_name][run_name].pause()
+    containers[proc_name][run_name]["container"].pause()
+    containers[proc_name][run_name]["paused"] = True
     print("Pausing docker container " + run_name)
 
 def remove(run_name):
@@ -129,9 +130,10 @@ def remove(run_name):
         return
     
     proc_name=run_name[:run_name.rfind('-')]
-    containers[proc_name][run_name].remove(force=True)
+    containers[proc_name][run_name]["container"].remove(force=True)
 
-    containers[proc_name][run_name] = None
+    containers[proc_name][run_name]["container"] = None
+    containers[proc_name][run_name]["paused"] = None
     
     print("Removed docker container " + run_name)
 
@@ -143,7 +145,8 @@ def restart(run_name):
     """
     # Unpauses the container in containers[proc_name][run_name]
     proc_name=run_name[:run_name.rfind('-')]
-    containers[proc_name][run_name].unpause()
+    containers[proc_name][run_name]["container"].unpause()
+    containers[proc_name][run_name]["paused"] = False
     print("Unpausing docker container " + run_name)
 
 def get_data(run_name, destination):
@@ -160,12 +163,26 @@ def get_data(run_name, destination):
     shutil.copytree(saved_data_path/run_name, destination)
     print("Files in " + run_name + " Copied to " + destination )
 
-def list_containers():
+def list_containers(run_name=None):
     """ list containers and their run_names
 
+        @params: run_name is name corresponding to a single docker container
     """
+    if (run_name != None):
+        proc_name=run_name[:run_name.rfind('-')]
+        listed = containers[proc_name][run_name]["container"]
 
-    pass
+        if (listed != None):
+            print(f'Run name: {run_name}, ID: {listed.id}, Image: {listed.image}, \
+                  Status: {listed.status}, Paused: {containers[proc_name][run_name]["paused"]}')
+    else:
+        for item in containers.items():
+            container_dict = item[1]
+    
+            for container in container_dict.items():
+                if (container[1]["container"] != None):
+                    print(f'Run name: {container[0]}, ID: {container[1]["container"].id}, Image: {container[1]["container"].image}, \
+                          Status: {container[1]["container"].status}, Paused: {container[1]["paused"]}')
 
 def validate(path):
     """
@@ -217,7 +234,4 @@ if __name__ == "__main__":
     # globals()[sys.argv[1]]()
 
     fromyml("./examples/weather.yml")
-    start("weather")
-    start("weather")
-    remove("weather-0")
     start("weather")
