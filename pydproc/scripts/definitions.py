@@ -3,7 +3,7 @@
 from pathlib import Path
 import os
 
-# TODO use glob to find package_dir
+# Get directory paths
 package_dir = Path(os.path.abspath(__file__.rsplit('/', 1)[0] + '/..'))
 docker_base_path = package_dir / "docker_base"
 saved_images_path = package_dir / "saved_images"
