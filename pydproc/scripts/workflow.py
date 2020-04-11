@@ -4,8 +4,7 @@ import yaml
 import os
 import shutil
 import docker
-import json, requests 
-from utils import __recur_fields
+import json, requests
 
 # non-dependency imports
 from pydproc.scripts.definitions import docker_base_path, saved_images_path, saved_data_path
