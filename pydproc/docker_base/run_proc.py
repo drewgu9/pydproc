@@ -56,9 +56,9 @@ def filter_data(data, fields):
                         del data[key]
                 else:
                     if key in cur_keys:
-                        data = __recur_fields(data[key], fields[key])
+                        data = scrap_fields(data[key], fields[key])
                     else:
-                        data = __recur_fields(data[key], fields)
+                        data = scrap_fields(data[key], fields)
             return data
     
     def cleanup(data):
@@ -70,12 +70,12 @@ def filter_data(data, fields):
             return_data = {}
             for key in data.keys():
                 if data[key] is not None:
-                    return_data[key] = __cleanup(data[key])
+                    return_data[key] = cleanup(data[key])
             return return_data
         elif isinstance(data, list):
             l = []
             for item in data:
-                l.append(__cleanup(item))
+                l.append(cleanup(item))
             return l
         else:
             return data

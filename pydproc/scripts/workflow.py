@@ -195,7 +195,7 @@ def validate(path):
                     for k in keys:
                         cur1 = element[k]
                         cur2 = api_call[k]
-                        __recur_fields(cur1, cur2)
+                        recur_fields(cur1, cur2)
                 except:
                     raise Exception('WARNING: Incorrect desired data')
             else:
