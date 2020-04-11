@@ -4,10 +4,11 @@ import yaml
 import os
 import shutil
 import docker
-import json, requests
+import json, requests 
+from utils import __recur_fields
 
-# internal imports
-from pydproc.scripts.definitions import docker_base_path, saved_images_path, saved_data_path
+# non-dependency imports
+from definitions import docker_base_path, saved_images_path, saved_data_path
 
 # load client for docker. This requires user set env variables $DOCKER_USERNAME and $DOCKER_PASSWORD
 client = docker.from_env()
@@ -17,6 +18,11 @@ containers = {}
 default_values = {'api_key':'a4b7b2df254a30de3f19c89b8f8be2b9', 'city_name': 'Seattle'}
 
 def make_docker_dir(specs):
+    """ Makes a docker directory to run API scripts
+        @param: specs is python dictionary containing all relevant information
+        from user-specified YAML file
+    """
+    
     new_image_path = saved_images_path / specs['proc_name']
     if new_image_path.exists():
         shutil.rmtree(new_image_path)
@@ -92,15 +98,25 @@ def start(proc_name: str):
     with open(new_save_dir / (run_name + ".log"), "w+") as log_file:
         log_file.write(str(container.logs()))
 
-    containers[proc_name][run_name] = container
+    containers[proc_name][run_name] =  {"container": container, "paused": False}
 
 def stop(run_name):
+    """
+        Pauses a specified docker container
+        @param: run_name is name corresponding to single docker container
+    """
     # stop the container in containers[proc_name][run_name]
     proc_name=run_name[:run_name.rfind('-')]
-    containers[proc_name][run_name].pause()
+    containers[proc_name][run_name]["container"].pause()
+    containers[proc_name][run_name]["paused"] = True
     print("Pausing docker container " + run_name)
 
 def remove(run_name):
+    """
+        Removes a running docker container by force
+        @param: run_name is name corresponding to single docker container
+    """
+    #removes running docker container forcefully, leaves image
     sure = input("Are you sure you want to remove this container? y/n : ")
 
     if (sure == "n"):
@@ -109,19 +125,87 @@ def remove(run_name):
         return
     
     proc_name=run_name[:run_name.rfind('-')]
-    containers[proc_name][run_name].remove(force=True)
+    containers[proc_name][run_name]["container"].remove(force=True)
+
+    containers[proc_name][run_name]["container"] = None
+    containers[proc_name][run_name]["paused"] = None
+    
     print("Removed docker container " + run_name)
 
 def restart(run_name):
-    # TODO parse run_name for proc_name
-    # TODO stop the container in containers[proc_name][run_name]
-    pass
+    """
+        Unpauses a running docker container
+        @param: run_name is name corresponding to single docker container
+    """
+    # Unpauses the container in containers[proc_name][run_name]
+    proc_name=run_name[:run_name.rfind('-')]
+    containers[proc_name][run_name]["container"].unpause()
+    containers[proc_name][run_name]["paused"] = False
+    print("Unpausing docker container " + run_name)
 
 def get_data(run_name, destination):
-    # TODO search saved_data_path for run_name and shutil.copytree() it to destination
-    pass
+    """
+        Copies data file produced by docker container associated with run_name into
+        specified destination on local computer
+        @params: run_name is name corresponding to a single docker container
+                 destination is filepath on local machine
+    """
+    
+    # search saved_data_path for run_name and shutil.copytree() it to destination
+    shutil.copytree(saved_data_path/run_name, destination)
+    print("Files in " + run_name + " Copied to " + destination )
+
+def list_containers(run_name=None):
+    """ list containers and their run_names
+        @params: run_name is name corresponding to a single docker container
+    """
+    if (run_name != None):
+        proc_name=run_name[:run_name.rfind('-')]
+        listed = containers[proc_name][run_name]["container"]
+
+        if (listed != None):
+            print(f'Run name: {run_name}, ID: {listed.id}, Image: {listed.image}, \
+                  Status: {listed.status}, Paused: {containers[proc_name][run_name]["paused"]}')
+    else:
+        for item in containers.items():
+            container_dict = item[1]
+    
+            for container in container_dict.items():
+                if (container[1]["container"] != None):
+                    print(f'Run name: {container[0]}, ID: {container[1]["container"].id}, Image: {container[1]["container"].image}, \
+                          Status: {container[1]["container"].status}, Paused: {container[1]["paused"]}')
 
 def validate(path):
+    """
+    Ensures url_params and fields_to_save specs in yml file are correct and exist when return API
+    data
+    
+    :param path: path to yml file
+    """
+                        
+    def recur_fields(api_call, desired_fields):
+        """
+        Reads through API data to make sure client desired data is present
+        :param api_call: is the working API data in a dict
+        :param desired_fields: is the client desired data in a dict
+        """
+        for element in desired_fields:
+            if isinstance(element, dict):
+                keys = list(element.keys())
+                try:
+                    for k in keys:
+                        cur1 = element[k]
+                        cur2 = api_call[k]
+                        __recur_fields(cur1, cur2)
+                except:
+                    raise Exception('WARNING: Incorrect desired data')
+            else:
+                for l in desired_fields:
+                    if l not in api_call:
+                        print(desired_fields)
+                        print(api_call)
+                        raise Exception('WARNING: desired data ' + l + ' not present in desired data')
+                        
     with open(path) as f:
         ymlspecs = yaml.safe_load(f)
 
@@ -138,32 +222,37 @@ def validate(path):
             in2 = i
             desired_params.append(base_url[in1:in2])
 
-    # TODO: update yaml file with any changed parameters if required
     while len(url_params) != 0:
         try:
             c1 = desired_params.pop(0)
             c2 = url_params.pop(0)
+            if desired_params.pop(0) != url_params.pop(0):
+                print('WARNING: incorrect paramters, replacing ' + c1 + ' with ' + c2 + 'with default value ' + default_values[c2]) 
+                ymlspecs[url_params][c2] = default_values[c2]
         except:
             print('WARNING: Missing required URL parameters.')
             while len(url_params) != 0:
                 cur = url_params.pop(0)
                 print('Filling in ' + cur + 'with default value ' + default_values[cur])
-        if desired_params.pop(0) != url_params.pop(0):
-              print('WARNING: incorrect paramters, replacing ' + c1 + ' with ' + c2 + 'with default value ' + default_values[c2]) 
+                ymlspecs[url_params][cur] = default_values[cur]
 
     while len(desired_params) != 0:
         print("WARNING: unused parameter " + desired_params.pop(0))
     
     api_call = requests.get(base_url.format(**ymlspecs['url_params'])).json()
-    desired_fields = ymlspecs['fields_to_save']
-    print('Validating data...')
-    __recur_fields(desired_fields, api_call)
-    print('Validation passed with no errors.')
+    try:
+        desired_fields = ymlspecs['fields_to_save']
+        print(desired_fields)
+        print('Validating data...')
+        recur_fields(api_call, desired_fields)
+        print('Validation passed with no errors.')
+    except:
+        print('missing fields to save, using all data from api call')
+
+    with open(path, 'w') as f:
+        f.write(yaml.dump(ymlspecs))
+    return ymlspecs
                       
-
 if __name__ == "__main__":
-    # TODO Uncomment this for when we create cli
-    # globals()[sys.argv[1]]()
-
     fromyml("./examples/weather.yml")
     start("weather")
