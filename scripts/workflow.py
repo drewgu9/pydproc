@@ -119,6 +119,30 @@ def validate(path):
     
     :param path: path to yml file
     """
+                        
+    def recur_fields(api_call, desired_fields):
+    """
+    Reads through API data to make sure client desired data is present
+    :param api_call: is the working API data in a dict
+    :param desired_fields: is the client desired data in a dict
+    """
+    for element in desired_fields:
+        if isinstance(element, dict):
+            keys = list(element.keys())
+            try:
+                for k in keys:
+                    cur1 = element[k]
+                    cur2 = api_call[k]
+                    __recur_fields(cur1, cur2)
+            except:
+                raise Exception('WARNING: Incorrect desired data')
+        else:
+            for l in desired_fields:
+                if l not in api_call:
+                    print(desired_fields)
+                    print(api_call)
+                    raise Exception('WARNING: desired data ' + l + ' not present in desired data')
+                        
     with open(path) as f:
         ymlspecs = yaml.safe_load(f)
 
@@ -157,7 +181,7 @@ def validate(path):
         desired_fields = ymlspecs['fields_to_save']
         print(desired_fields)
         print('Validating data...')
-        __recur_fields(api_call, desired_fields)
+        recur_fields(api_call, desired_fields)
         print('Validation passed with no errors.')
     except:
         print('missing fields to save, using all data from api call')
