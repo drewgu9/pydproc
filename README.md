@@ -18,7 +18,7 @@ Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduc
 
 ## Authors
 
-* **Vladimir Ovechkin** - *project setup, initial work, Managing TODOs, packaging* - University of Washington
+* **Vladimir Ovechkin** - *Project setup, Initial work, Managing TODOs, Packaging* - University of Washington
 * **Andrew Wu** - *Initial work* - University of Washington
 * **Robert Burris** - *Initial work* - University of Washington
 
