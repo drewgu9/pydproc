@@ -7,7 +7,7 @@ import docker
 import json, requests
 
 # internal imports
-from definitions import docker_base_path, saved_images_path, saved_data_path
+from pydproc.scripts.definitions import docker_base_path, saved_images_path, saved_data_path
 
 # load client for docker. This requires user set env variables $DOCKER_USERNAME and $DOCKER_PASSWORD
 client = docker.from_env()
@@ -17,9 +17,10 @@ containers = {}
 default_values = {'api_key':'a4b7b2df254a30de3f19c89b8f8be2b9', 'city_name': 'Seattle'}
 
 def make_docker_dir(specs):
-    """ Makes a docker directory to run API scripts
-        @param: specs is python dictionary containing all relevant information
-        from user-specified YAML file
+    """
+    Makes a docker directory to build image from
+
+    :param specs: python dictionary containing all relevant information from user-specified YAML file
     """
     
     new_image_path = saved_images_path / specs['proc_name']
@@ -48,8 +49,8 @@ def make_docker_dir(specs):
 def fromyml(spec_file: str):
     """
     Build docker image from yml file as input
+
     :param spec_file: path to spec file
-    :return:
     """
     spec_file = Path(os.path.abspath(spec_file))
 
@@ -73,7 +74,8 @@ def fromyml(spec_file: str):
 
 def start(proc_name: str):
     """
-    Start docker container and mounts saved_data folder
+    Start docker container and mount new saved_data/run_name folder for the run
+
     :param proc_name: name of image in pydproc repo
     """
     image_name = f'pydproc/{proc_name}:latest'
@@ -101,8 +103,9 @@ def start(proc_name: str):
 
 def stop(run_name):
     """
-        Pauses a specified docker container
-        @param: run_name is name corresponding to single docker container
+    Pauses a specified docker container
+
+    :param run_name: name corresponding to single docker container
     """
     # stop the container in containers[proc_name][run_name]
     proc_name=run_name[:run_name.rfind('-')]
@@ -112,8 +115,9 @@ def stop(run_name):
 
 def remove(run_name):
     """
-        Removes a running docker container by force
-        @param: run_name is name corresponding to single docker container
+    Removes a running docker container by force
+
+    :param run_name: is name corresponding to single docker container
     """
     #removes running docker container forcefully, leaves image
     sure = input("Are you sure you want to remove this container? y/n : ")
@@ -133,8 +137,9 @@ def remove(run_name):
 
 def restart(run_name):
     """
-        Unpauses a running docker container
-        @param: run_name is name corresponding to single docker container
+    Unpauses a running docker container
+
+    :param run_name: is name corresponding to single docker container
     """
     # Unpauses the container in containers[proc_name][run_name]
     proc_name=run_name[:run_name.rfind('-')]
@@ -144,10 +149,11 @@ def restart(run_name):
 
 def get_data(run_name, destination):
     """
-        Copies data file produced by docker container associated with run_name into
-        specified destination on local computer
-        @params: run_name is name corresponding to a single docker container
-                 destination is filepath on local machine
+    Copies data files produced by docker container associated with run_name into
+    specified destination on local computer
+
+    :param run_name: is name corresponding to a single docker container
+    :param destination: is filepath on local machine
     """
     
     # search saved_data_path for run_name and shutil.copytree() it to destination
@@ -155,8 +161,10 @@ def get_data(run_name, destination):
     print("Files in " + run_name + " Copied to " + destination )
 
 def list_containers(run_name=None):
-    """ list containers and their run_names
-        @params: run_name is name corresponding to a single docker container
+    """
+    list containers and their run_names
+
+    :params run_name: is name corresponding to a single docker container
     """
     if (run_name != None):
         proc_name=run_name[:run_name.rfind('-')]
@@ -185,6 +193,7 @@ def validate(path):
     def recur_fields(api_call, desired_fields):
         """
         Reads through API data to make sure client desired data is present
+
         :param api_call: is the working API data in a dict
         :param desired_fields: is the client desired data in a dict
         """
@@ -255,11 +264,13 @@ def validate(path):
 def buildyml():
     """
     Builds a YAML file from user input
+
     :return: a dictionary representing the contents of the desired YAML file
     """
     def is_int(s):
         """
         Simple helper method to check if a string can be cast to an int
+
         :param: s: string that you want to check
         :return: boolean as to whether or not it can be cast to an int
         """
@@ -359,5 +370,6 @@ def buildyml():
     return yml_dict                          
                         
 if __name__ == "__main__":
+    # Tests for development
     fromyml("./examples/weather.yml")
     start("weather")
