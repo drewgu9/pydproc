@@ -251,7 +251,113 @@ def validate(path):
     with open(path, 'w') as f:
         f.write(yaml.dump(ymlspecs))
     return ymlspecs
-                      
+
+def buildyml():
+    """
+    Builds a YAML file from user input
+    :return: a dictionary representing the contents of the desired YAML file
+    """
+    def is_int(s):
+        """
+        Simple helper method to check if a string can be cast to an int
+        :param: s: string that you want to check
+        :return: boolean as to whether or not it can be cast to an int
+        """
+        try: 
+            int(s)
+            return True
+        except ValueError:
+            return False
+
+    def create_dict():
+        """
+        Helper method used to take user input and build a tiered dictionaries
+        """
+        l = []
+        keep_adding = True
+
+        while keep_adding:
+            return_dict = {}
+            field_name = input('Input data field name: ')
+            if is_int(field_name):
+                field_name = int(field_name)
+
+            nested_dict = input('Do you want to map a dictionary to this data? (\'y\'/\'n\') ')
+            while nested_dict != 'y' and nested_dict != 'n':
+                print('Response must be a \'y\' or \'n\'!')
+                nested_dict = input('Do you want to map a dictionary to this data? (\'y\'/\'n\') ')
+
+            if nested_dict == 'y':
+                return_dict[field_name] = create_dict()
+                l.append(return_dict)
+            elif nested_dict == 'n':
+                l.append(field_name)
+
+            cont_add = input('Continue adding data on this level? (\'y\'/\'n\') ')
+            while cont_add != 'y' and cont_add != 'n':
+                print('Response must be a \'y\' or \'n\'!')
+                cont_add = input('Continue adding data on this level? (\'y\'/\'n\') ')
+
+            if cont_add == 'y':
+                keep_adding = True
+            elif cont_add == 'n':
+                keep_adding = False
+
+        return l
+
+    yml_dict = {'base_url': '', 'url_params': {}, 'fields_to_save': [], 'time_interval': 0, 'max_requests': 0}
+    
+    yml_dict['base_url'] = input("Input API URL with API fields present in the URL enclosed with {}  ")
+    
+    need_fields = input('Are there fields required for calling the API? (\'y\'/\'n\') ')
+    while need_fields != 'y' and need_fields !='n':
+        print('Response must be a \'y\' or \'n\'!')
+        need_fields = input('Are there fields required for calling the API? (\'y\'/\'n\') ')
+
+    if need_fields == "y":
+        stop = True
+    else:
+        stop = False
+
+    while stop:
+        field_name = input('Input API field name: ')
+        if is_int(field_name):
+            field_name = int(field_name)
+
+        field = input('Input API field: ')
+        if is_int(field):
+            field = int(field)
+
+        yml_dict['url_params'][field_name] = field
+
+        cont_api = input('Continue inputting API fields? (\'y\'/\'n\') ')
+        while cont_api != 'y' and cont_api != 'n':
+            print('Response must be a \'y\' or \'n\'!')
+            cont_api = input('Continue inputting API fields? (\'y\'/\'n\') ')
+    
+        if cont_api == 'n':
+            stop = False
+        elif cont_api == 'y':
+            stop = True
+    
+    keep_all = input('Do you want to keep all data pulled from the API? (\'y\'/\'n\') ')
+    while keep_all != 'y' and keep_all != 'n':
+            print('Response must be a \'y\' or \'n\'!')
+            keep_all = input('Do you want to keep all data pulled from the API? (\'y\'/\'n\') ')
+    
+    if keep_all != 'y':
+            l = create_dict()
+            yml_dict['fields_to_save'] = l
+
+    yml_dict['time_interval'] = int(input("Input time interval between API calls in hours: "))
+    
+    yml_dict['max_requests'] = int(input("Input number of desired API requests: "))
+
+    with open('/Users/RL/Documents/csprojects/pydproc/pydproc/examples/weather.yml') as f:
+        y = yaml.safe_load(f)
+    
+    return yml_dict                          
+                        
 if __name__ == "__main__":
     fromyml("./examples/weather.yml")
     start("weather")
