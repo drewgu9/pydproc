@@ -2,3 +2,6 @@ venv/
 .idea
 saved_images/
 scripts/__pycache__/
+build/
+dist/
+pydproc.egg-info/
