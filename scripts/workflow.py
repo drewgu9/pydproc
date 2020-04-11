@@ -18,6 +18,12 @@ containers = {}
 default_values = {'api_key':'a4b7b2df254a30de3f19c89b8f8be2b9', 'city_name': 'Seattle'}
 
 def make_docker_dir(specs):
+    """ Makes a docker directory to run API scripts
+
+        @param: specs is python dictionary containing all relevant information
+        from user-specified YAML file
+    """
+    
     new_image_path = saved_images_path / specs['proc_name']
     if new_image_path.exists():
         shutil.rmtree(new_image_path)
@@ -98,12 +104,23 @@ def start(proc_name: str):
     containers[proc_name][run_name] = container
 
 def stop(run_name):
+    """
+        Pauses a specified docker container
+
+        @param: run_name is name corresponding to single docker container
+    """
     # stop the container in containers[proc_name][run_name]
     proc_name=run_name[:run_name.rfind('-')]
     containers[proc_name][run_name].pause()
     print("Pausing docker container " + run_name)
 
 def remove(run_name):
+    """
+        Removes a running docker container by force
+
+        @param: run_name is name corresponding to single docker container
+    """
+    #removes running docker container forcefully, leaves image
     sure = input("Are you sure you want to remove this container? y/n : ")
 
     if (sure == "n"):
@@ -113,18 +130,50 @@ def remove(run_name):
     
     proc_name=run_name[:run_name.rfind('-')]
     containers[proc_name][run_name].remove(force=True)
+
+    containers[proc_name][run_name] = None
+    
     print("Removed docker container " + run_name)
 
 def restart(run_name):
-    # TODO parse run_name for proc_name
-    # TODO stop the container in containers[proc_name][run_name]
-    pass
+    """
+        Unpauses a running docker container
+
+        @param: run_name is name corresponding to single docker container
+    """
+    # Unpauses the container in containers[proc_name][run_name]
+    proc_name=run_name[:run_name.rfind('-')]
+    containers[proc_name][run_name].unpause()
+    print("Unpausing docker container " + run_name)
 
 def get_data(run_name, destination):
-    # TODO search saved_data_path for run_name and shutil.copytree() it to destination
+    """
+        Copies data file produced by docker container associated with run_name into
+        specified destination on local computer
+
+        @params: run_name is name corresponding to a single docker container
+
+                 destination is filepath on local machine
+    """
+    
+    # search saved_data_path for run_name and shutil.copytree() it to destination
+    shutil.copytree(saved_data_path/run_name, destination)
+    print("Files in " + run_name + " Copied to " + destination )
+
+def list_containers():
+    """ list containers and their run_names
+
+    """
+
     pass
 
 def validate(path):
+    """
+        Validates input from YAML file
+
+        @param: path to the YAML file
+    """
+    
     with open(path) as f:
         ymlspecs = yaml.safe_load(f)
 
@@ -165,8 +214,10 @@ def validate(path):
                       
 
 if __name__ == "__main__":
-    # TODO Uncomment this for when we create cli
     # globals()[sys.argv[1]]()
 
     fromyml("./examples/weather.yml")
+    start("weather")
+    start("weather")
+    remove("weather-0")
     start("weather")
