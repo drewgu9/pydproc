@@ -261,7 +261,7 @@ def validate(path):
         f.write(yaml.dump(ymlspecs))
     return ymlspecs
 
-def buildyml():
+def buildspecs():
     """
     Builds a YAML file from user input
 
@@ -363,9 +363,6 @@ def buildyml():
     yml_dict['time_interval'] = int(input("Input time interval between API calls in hours: "))
     
     yml_dict['max_requests'] = int(input("Input number of desired API requests: "))
-
-    with open('/Users/RL/Documents/csprojects/pydproc/pydproc/examples/weather.yml') as f:
-        y = yaml.safe_load(f)
     
     return yml_dict                          
                         
