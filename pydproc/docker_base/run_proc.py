@@ -4,7 +4,7 @@
 import yaml
 import requests, json
 import time
-from scripts.utils import __scrap_fields, __cleanup
+
 
 def load_specs(filename="proc.yml"):
     """
@@ -39,55 +39,50 @@ def filter_data(data, fields):
     :param fields: dict representing the keys/indexes to be saved
     :return: a dict with the parsed data inside
     """
-    
-    def scrap_fields(data, fields):
-        """
-        Removes data not necessary to the client
 
-        :param data: dict of the working API data
-        :param fields: are the data fields the client wants saved in a dict
-        """
-        for element in data:
-            working_keys = list(element.keys())
-            cur_keys = list(fields.keys())
-            for key in working_keys:
-                if not isinstance(data[key], dict):
-                    if key not in cur_keys:
-                        del data[key]
-                else:
-                    if key in cur_keys:
-                        data = scrap_fields(data[key], fields[key])
-                    else:
-                        data = scrap_fields(data[key], fields)
-            return data
-    
-    def cleanup(data):
-        """
-        Remove null values from parsed API data
-        :param data: parsed API data in a dict
-        """
-        if isinstance(data, dict):
-            return_data = {}
-            for key in data.keys():
-                if data[key] is not None:
-                    return_data[key] = cleanup(data[key])
-            return return_data
-        elif isinstance(data, list):
-            l = []
-            for item in data:
-                l.append(cleanup(item))
-            return l
-        else:
-            return data
-    
-    clean_data = cleanup(scrap_fields(data, fields))
-    
-    fin_data = {}
-    for key in list(clean_data.keys()):
-        if clean_data[key]:
-            fin_data[key] = clean_data[key]
+    # queue to keep track of all datas that need filtering
+    todo = [(data, fields)]
 
-    return fin_data
+    while len(todo) > 0:
+        # get initial information
+        tofilter, tosave = todo.pop()
+
+        # convert tosave to list if dict
+        tosave_list = list(tosave.keys()) if isinstance(tosave, dict) else tosave
+
+        # if we have to filter a dict
+        if isinstance(tofilter, dict):
+            tofilter_key_copy = list(tofilter.keys()).copy()
+
+            # iterate over each entry in the dict
+            for k in tofilter_key_copy:
+                # check if we do not want to save it
+                if k not in tosave_list:
+                    tofilter.pop(k)
+
+                # otherwise add the value of the entry to to/do
+                elif isinstance(tosave, dict):
+                    todo.append((tofilter[k], tosave[k]))
+
+        # if we have to filter a list
+        elif isinstance(tofilter, list):
+
+            tofilter_len = len(tofilter)
+
+            # iterate by index
+            for i in range(0, tofilter_len):
+                # check if we do not want to save this index
+                if i not in tosave_list:
+                    del tofilter[i]
+                    i -= 1
+
+                # otherwise add the value of the entry to to/do
+                elif isinstance(tosave, dict):
+                    todo.append((tofilter[i], tosave[i]))
+
+        print('\n', tofilter)
+        print(tosave)
+        print(tosave_list, '\n')
 
 
 def main():
