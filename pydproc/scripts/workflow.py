@@ -179,7 +179,7 @@ def get_data(run_name, destination):
     if Path(destination).exists():
         print("Destination must be a directory that does not exist.")
         return
-    shutil.copy(saved_data_path / run_name, destination)
+    shutil.copytree(saved_data_path / run_name, destination)
     print("Files in " + run_name + " Copied to " + destination)
 
 
