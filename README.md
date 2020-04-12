@@ -1,6 +1,6 @@
 # pydproc
 
-pydproc is python3 package that provides a simple to use command line interface for periodic data retrieval from APIs. Using inputs from a yml file, pydproc builds a new Docker image specific to that process. The user can then run, stop, and restart these processes for pydproc to start collecting data. When the user wants this data, they can easily retrieve it along with the run logs. This can help generate new datasets for Machine Learning projects as it simplifies and automates the process of data collection from APIs.
+pydproc is python3 package that provides a simple to use command line interface for periodic data retrieval from APIs. Using inputs from a yml file, pydproc builds a new Docker image specific to that process. The user can then run, stop, and restart these processes for pydproc to start collecting data. When the user wants this data, they can easily retrieve it along with the run logs. This can help generate new datasets for machine learning projects as it simplifies and automates the process of data collection from APIs.
 
 ## Installation
 
