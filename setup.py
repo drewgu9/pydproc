@@ -5,7 +5,7 @@ with open("README.md", 'r') as f:
 
 setup(
     name='pydproc',
-    version='1.1',
+    version='1.1.1',
     description='A useful module',
     license="MIT",
     long_description=long_description,
