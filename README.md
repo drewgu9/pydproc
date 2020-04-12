@@ -7,6 +7,8 @@ pydproc is python3 package that provides a simple to use command line interface 
 Pydproc can be installed using pip:
 
     pip3 install pydproc
+    
+ If you install using pip, it might not work due to conflicting versions of Python (needs Python3)
 
 ## Getting Started
 
