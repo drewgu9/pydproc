@@ -10,7 +10,36 @@ Pydproc can be installed using pip:
 
 ## Getting Started
 
-Talk about basic commands here.
+Examples of YML files can be found in examples/weather.yml
+
+The following command builds the docker container for a specified YML file with an API code:
+
+    pydproc build --ymlfile $FILE_PATH
+
+To run the container to mine data do
+    
+    pydproc start $FILE_NAME
+    
+To make your YML file from user input do 
+
+    pydproc build
+ 
+ Commands such as start, stop, restart, and remove follow the format of 
+ 
+    pydproc $COMMAND $DATA_FILE_NAME
+ 
+ API data is stored in a saved_data folder. To copy data from a certain file to a destination on your local machine,
+ 
+    pydproc get-data $FILE_PATH $DESTINATION_PATH
+    
+ For more information do
+ 
+    pydproc --help
+ 
+ Example Code: 
+    pydproc build --ymlfile ./example/weather.yml
+    pydproc start weather
+    pydproc get-data ./saved_data/weather-0 ./destination
 
 ## Contributing
 
@@ -20,7 +49,7 @@ Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduc
 
 * **Vladimir Ovechkin** - *Project setup, Initial work, Managing TODOs, Packaging* - University of Washington
 * **Robert Burris** - *YAML processing, Data field validation, API data parsing* - University of Washington
-* **Andrew Wu** - *Initial work* - University of Washington
+* **Andrew Wu** - *Command Line Interface, Docker Container Configuration, User Manual* - University of Washington
 
 See also the list of [contributors](https://github.com/your/project/contributors) who participated in this project.
 
