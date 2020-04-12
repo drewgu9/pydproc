@@ -9,7 +9,7 @@ import pickle
 
 # internal imports
 from pydproc.scripts.definitions import docker_base_path, saved_images_path, \
-saved_data_path, run_dict_path
+    saved_data_path, run_dict_path
 
 # load client for docker. This requires user set env variables $DOCKER_USERNAME and $DOCKER_PASSWORD
 client = docker.from_env()
@@ -20,9 +20,10 @@ if run_dict_path.exists():
     with run_dict_path.open('r+b') as run_dict_file:
         if os.stat(run_dict_path).st_size > 0:
             containers = pickle.load(run_dict_file)
-    
+
 # Defines default values for YAML file
-default_values = {'api_key':'a4b7b2df254a30de3f19c89b8f8be2b9', 'city_name': 'Seattle'}
+default_values = {'api_key': 'a4b7b2df254a30de3f19c89b8f8be2b9', 'city_name': 'Seattle'}
+
 
 def make_docker_dir(specs):
     """
@@ -30,7 +31,7 @@ def make_docker_dir(specs):
 
     :param specs: python dictionary containing all relevant information from user-specified YAML file
     """
-    
+
     new_image_path = saved_images_path / specs['proc_name']
     if new_image_path.exists():
         shutil.rmtree(new_image_path)
@@ -77,8 +78,9 @@ def fromyml(spec_file: str):
     # Build and tag new docker image
     build_pathway = os.path.abspath(saved_images_path / specs['proc_name'])
     client.images.build(path=build_pathway, tag=f"pydproc/{specs['proc_name']}")
-                        
+
     # os.system("docker build -t pydproc/weather " + build_pathway)
+
 
 def start(proc_name: str):
     """
@@ -93,23 +95,25 @@ def start(proc_name: str):
 
     if not proc_name in containers.keys():
         containers[proc_name] = {}
-        
+
     run_name = f'{proc_name}-{len(containers[proc_name])}'
     new_save_dir = saved_data_path / run_name
     os.mkdir(new_save_dir)
 
     print(f'Starting new run {run_name}')
     container = client.containers.run(image_name, 'python run_proc.py',
-        volumes={str(new_save_dir): {'bind': '/saved_data', 'mode': 'rw'}}, stream=True, detach=True, remove=True)
-     # os.system("docker run --rm -v $PWD/saved_data:/workdir/saved_data pydproc_weather")
-                        
+                                      volumes={str(new_save_dir): {'bind': '/saved_data', 'mode': 'rw'}}, stream=True,
+                                      detach=True, remove=True)
+    # os.system("docker run --rm -v $PWD/saved_data:/workdir/saved_data pydproc_weather")
+
     # Save logs
     with open(new_save_dir / (run_name + ".log"), "w+") as log_file:
         log_file.write(str(container.logs()))
 
-    containers[proc_name][run_name] =  {"container": container.id, "paused": False}
+    containers[proc_name][run_name] = {"container": container.id, "paused": False}
     update_containers()
-    
+
+
 def stop(run_name):
     """
     Pauses a specified docker container
@@ -117,11 +121,12 @@ def stop(run_name):
     :param run_name: name corresponding to single docker container
     """
     # stop the container in containers[proc_name][run_name]
-    proc_name=run_name[:run_name.rfind('-')]
+    proc_name = run_name[:run_name.rfind('-')]
     client.containers.get(containers[proc_name][run_name]["container"]).pause()
     containers[proc_name][run_name]["paused"] = True
     print("Pausing docker container " + run_name)
     update_containers()
+
 
 def remove(run_name):
     """
@@ -129,22 +134,23 @@ def remove(run_name):
 
     :param run_name: is name corresponding to single docker container
     """
-    #removes running docker container forcefully, leaves image
+    # removes running docker container forcefully, leaves image
     sure = input("Are you sure you want to remove this container? y/n : ")
 
     if (sure == "n"):
         return
     elif (sure != "y"):
         return
-    
-    proc_name=run_name[:run_name.rfind('-')]
+
+    proc_name = run_name[:run_name.rfind('-')]
     client.containers.get(containers[proc_name][run_name]["container"]).remove(force=True)
 
     containers[proc_name][run_name]["container"] = None
     containers[proc_name][run_name]["paused"] = None
-    
+
     print("Removed docker container " + run_name)
     update_containers()
+
 
 def restart(run_name):
     """
@@ -153,11 +159,12 @@ def restart(run_name):
     :param run_name: is name corresponding to single docker container
     """
     # Unpauses the container in containers[proc_name][run_name]
-    proc_name=run_name[:run_name.rfind('-')]
+    proc_name = run_name[:run_name.rfind('-')]
     client.containers.get(containers[proc_name][run_name]["container"]).unpause()
     containers[proc_name][run_name]["paused"] = False
     print("Unpausing docker container " + run_name)
     update_containers()
+
 
 def get_data(run_name, destination):
     """
@@ -167,10 +174,14 @@ def get_data(run_name, destination):
     :param run_name: is name corresponding to a single docker container
     :param destination: is filepath on local machine
     """
-    
+
     # search saved_data_path for run_name and shutil.copytree() it to destination
-    shutil.copytree(saved_data_path/run_name, destination)
-    print("Files in " + run_name + " Copied to " + destination )
+    if Path(destination).exists():
+        print("Destination must be a directory that does not exist.")
+        return
+    shutil.copy(saved_data_path / run_name, destination)
+    print("Files in " + run_name + " Copied to " + destination)
+
 
 def list_containers(run_name=None):
     """
@@ -179,9 +190,9 @@ def list_containers(run_name=None):
     :params run_name: is name corresponding to a single docker container
     """
     if (run_name != None):
-        proc_name=run_name[:run_name.rfind('-')]
+        proc_name = run_name[:run_name.rfind('-')]
         listed = containers[proc_name][run_name]["container"]
-        
+
         if (listed != None):
             listedc = client.containers.get(listed)
             print(f'Run name: {run_name}, ID: {listed}, Image: {listedc.image}, \
@@ -189,12 +200,13 @@ def list_containers(run_name=None):
     else:
         for item in containers.items():
             container_dict = item[1]
-    
+
             for container in container_dict.items():
                 if (container[1]["container"] != None):
                     listedc = client.containers.get(container[1]["container"])
                     print(f'Run name: {container[0]}, ID: {container[1]["container"]}, Image: {listedc.image}, \
                           Status: {listedc.status}, Paused: {container[1]["paused"]}')
+
 
 def validate(path):
     """
@@ -203,7 +215,7 @@ def validate(path):
     
     :param path: path to yml file
     """
-                        
+
     def recur_fields(api_call, desired_fields):
         """
         Reads through API data to make sure client desired data is present
@@ -227,7 +239,7 @@ def validate(path):
                         print(desired_fields)
                         print(api_call)
                         raise Exception('WARNING: desired data ' + l + ' not present in desired data')
-                        
+
     with open(path) as f:
         ymlspecs = yaml.safe_load(f)
 
@@ -249,7 +261,8 @@ def validate(path):
             c1 = desired_params.pop(0)
             c2 = url_params.pop(0)
             if desired_params.pop(0) != url_params.pop(0):
-                print('WARNING: incorrect paramters, replacing ' + c1 + ' with ' + c2 + 'with default value ' + default_values[c2]) 
+                print('WARNING: incorrect paramters, replacing ' + c1 + ' with ' + c2 + 'with default value ' +
+                      default_values[c2])
                 ymlspecs[url_params][c2] = default_values[c2]
         except:
             print('WARNING: Missing required URL parameters.')
@@ -260,7 +273,7 @@ def validate(path):
 
     while len(desired_params) != 0:
         print("WARNING: unused parameter " + desired_params.pop(0))
-    
+
     api_call = requests.get(base_url.format(**ymlspecs['url_params'])).json()
     try:
         desired_fields = ymlspecs['fields_to_save']
@@ -275,12 +288,14 @@ def validate(path):
         f.write(yaml.dump(ymlspecs))
     return ymlspecs
 
+
 def buildspecs():
     """
-    Builds a YAML file from user input
+    Build specs
 
-    :return: a dictionary representing the contents of the desired YAML file
+    :return: a dictionary representing the specs
     """
+
     def is_int(s):
         """
         Simple helper method to check if a string can be cast to an int
@@ -288,7 +303,7 @@ def buildspecs():
         :param: s: string that you want to check
         :return: boolean as to whether or not it can be cast to an int
         """
-        try: 
+        try:
             int(s)
             return True
         except ValueError:
@@ -331,11 +346,11 @@ def buildspecs():
         return l
 
     yml_dict = {'base_url': '', 'url_params': {}, 'fields_to_save': [], 'time_interval': 0, 'max_requests': 0}
-    
+
     yml_dict['base_url'] = input("Input API URL with API fields present in the URL enclosed with {}  ")
-    
+
     need_fields = input('Are there fields required for calling the API? (\'y\'/\'n\') ')
-    while need_fields != 'y' and need_fields !='n':
+    while need_fields != 'y' and need_fields != 'n':
         print('Response must be a \'y\' or \'n\'!')
         need_fields = input('Are there fields required for calling the API? (\'y\'/\'n\') ')
 
@@ -359,32 +374,34 @@ def buildspecs():
         while cont_api != 'y' and cont_api != 'n':
             print('Response must be a \'y\' or \'n\'!')
             cont_api = input('Continue inputting API fields? (\'y\'/\'n\') ')
-    
+
         if cont_api == 'n':
             stop = False
         elif cont_api == 'y':
             stop = True
-    
+
     keep_all = input('Do you want to keep all data pulled from the API? (\'y\'/\'n\') ')
     while keep_all != 'y' and keep_all != 'n':
-            print('Response must be a \'y\' or \'n\'!')
-            keep_all = input('Do you want to keep all data pulled from the API? (\'y\'/\'n\') ')
-    
+        print('Response must be a \'y\' or \'n\'!')
+        keep_all = input('Do you want to keep all data pulled from the API? (\'y\'/\'n\') ')
+
     if keep_all != 'y':
-            l = create_dict()
-            yml_dict['fields_to_save'] = l
+        l = create_dict()
+        yml_dict['fields_to_save'] = l
 
     yml_dict['time_interval'] = int(input("Input time interval between API calls in hours: "))
-    
+
     yml_dict['max_requests'] = int(input("Input number of desired API requests: "))
-    
-    return yml_dict                          
+
+    return yml_dict
+
 
 def update_containers():
     with open(run_dict_path, 'w+b') as run_dict_file:
         pickle.dump(containers, run_dict_file)
-                        
+
+
 if __name__ == "__main__":
     # Tests for development
-    fromyml("./examples/weather.yml")
+    fromyml("../examples/weather.yml")
     start("weather")

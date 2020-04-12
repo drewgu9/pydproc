@@ -1,15 +1,15 @@
 base_url: http://api.openweathermap.org/data/2.5/weather?appid={api_key}&q={city_name}
-url_params:
-    api_key: 'a4b7b2df254a30de3f19c89b8f8be2b9'
-    city_name: 'Seattle'
 fields_to_save:
-    main:
-        - temp
-        - pressure
-        - humidity
-    weather:
-        0:
-            - description
-            - main
-time_interval: 1
+  main:
+  - temp
+  - pressure
+  - humidity
+  weather:
+    0:
+    - description
+    - main
 max_requests: 10
+time_interval: 1
+url_params:
+  api_key: a4b7b2df254a30de3f19c89b8f8be2b9
+  city_name: Seattle
