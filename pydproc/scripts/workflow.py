@@ -5,14 +5,22 @@ import os
 import shutil
 import docker
 import json, requests
+import pickle
 
 # internal imports
-from pydproc.scripts.definitions import docker_base_path, saved_images_path, saved_data_path
+from pydproc.scripts.definitions import docker_base_path, saved_images_path, \
+saved_data_path, run_dict_path
 
 # load client for docker. This requires user set env variables $DOCKER_USERNAME and $DOCKER_PASSWORD
 client = docker.from_env()
 # Maps image name to containers running it
 containers = {}
+
+if run_dict_path.exists():
+    with run_dict_path.open('r+b') as run_dict_file:
+        if os.stat(run_dict_path).st_size > 0:
+            containers = pickle.load(run_dict_file)
+    
 # Defines default values for YAML file
 default_values = {'api_key':'a4b7b2df254a30de3f19c89b8f8be2b9', 'city_name': 'Seattle'}
 
@@ -85,7 +93,7 @@ def start(proc_name: str):
 
     if not proc_name in containers.keys():
         containers[proc_name] = {}
-
+        
     run_name = f'{proc_name}-{len(containers[proc_name])}'
     new_save_dir = saved_data_path / run_name
     os.mkdir(new_save_dir)
@@ -99,8 +107,9 @@ def start(proc_name: str):
     with open(new_save_dir / (run_name + ".log"), "w+") as log_file:
         log_file.write(str(container.logs()))
 
-    containers[proc_name][run_name] =  {"container": container, "paused": False}
-
+    containers[proc_name][run_name] =  {"container": container.id, "paused": False}
+    update_containers()
+    
 def stop(run_name):
     """
     Pauses a specified docker container
@@ -109,9 +118,10 @@ def stop(run_name):
     """
     # stop the container in containers[proc_name][run_name]
     proc_name=run_name[:run_name.rfind('-')]
-    containers[proc_name][run_name]["container"].pause()
+    client.containers.get(containers[proc_name][run_name]["container"]).pause()
     containers[proc_name][run_name]["paused"] = True
     print("Pausing docker container " + run_name)
+    update_containers()
 
 def remove(run_name):
     """
@@ -128,12 +138,13 @@ def remove(run_name):
         return
     
     proc_name=run_name[:run_name.rfind('-')]
-    containers[proc_name][run_name]["container"].remove(force=True)
+    client.containers.get(containers[proc_name][run_name]["container"]).remove(force=True)
 
     containers[proc_name][run_name]["container"] = None
     containers[proc_name][run_name]["paused"] = None
     
     print("Removed docker container " + run_name)
+    update_containers()
 
 def restart(run_name):
     """
@@ -143,9 +154,10 @@ def restart(run_name):
     """
     # Unpauses the container in containers[proc_name][run_name]
     proc_name=run_name[:run_name.rfind('-')]
-    containers[proc_name][run_name]["container"].unpause()
+    client.containers.get(containers[proc_name][run_name]["container"]).unpause()
     containers[proc_name][run_name]["paused"] = False
     print("Unpausing docker container " + run_name)
+    update_containers()
 
 def get_data(run_name, destination):
     """
@@ -169,18 +181,20 @@ def list_containers(run_name=None):
     if (run_name != None):
         proc_name=run_name[:run_name.rfind('-')]
         listed = containers[proc_name][run_name]["container"]
-
+        
         if (listed != None):
-            print(f'Run name: {run_name}, ID: {listed.id}, Image: {listed.image}, \
-                  Status: {listed.status}, Paused: {containers[proc_name][run_name]["paused"]}')
+            listedc = client.containers.get(listed)
+            print(f'Run name: {run_name}, ID: {listed}, Image: {listedc.image}, \
+                  Status: {listedc.status}, Paused: {containers[proc_name][run_name]["paused"]}')
     else:
         for item in containers.items():
             container_dict = item[1]
     
             for container in container_dict.items():
                 if (container[1]["container"] != None):
-                    print(f'Run name: {container[0]}, ID: {container[1]["container"].id}, Image: {container[1]["container"].image}, \
-                          Status: {container[1]["container"].status}, Paused: {container[1]["paused"]}')
+                    listedc = client.containers.get(container[1]["container"])
+                    print(f'Run name: {container[0]}, ID: {container[1]["container"]}, Image: {listedc.image}, \
+                          Status: {listedc.status}, Paused: {container[1]["paused"]}')
 
 def validate(path):
     """
@@ -261,7 +275,7 @@ def validate(path):
         f.write(yaml.dump(ymlspecs))
     return ymlspecs
 
-def buildyml():
+def buildspecs():
     """
     Builds a YAML file from user input
 
@@ -363,11 +377,12 @@ def buildyml():
     yml_dict['time_interval'] = int(input("Input time interval between API calls in hours: "))
     
     yml_dict['max_requests'] = int(input("Input number of desired API requests: "))
-
-    with open('/Users/RL/Documents/csprojects/pydproc/pydproc/examples/weather.yml') as f:
-        y = yaml.safe_load(f)
     
     return yml_dict                          
+
+def update_containers():
+    with open(run_dict_path, 'w+b') as run_dict_file:
+        pickle.dump(containers, run_dict_file)
                         
 if __name__ == "__main__":
     # Tests for development
