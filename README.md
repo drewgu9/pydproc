@@ -37,9 +37,12 @@ To make your YML file from user input do
     pydproc --help
  
  Example Code: 
+ 
     pydproc build --ymlfile ./example/weather.yml
     pydproc start weather
     pydproc get-data ./saved_data/weather-0 ./destination
+ 
+ Thanks for using our package!
 
 ## Contributing
 
