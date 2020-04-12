@@ -9,6 +9,9 @@ Pydproc can be installed using pip:
     pip3 install pydproc
     
  If you install using pip, it might not work due to conflicting versions of Python (needs Python3)
+ 
+ If you run into a "module not found" error, you can use pip3 to install any dependencies.
+ However, the package should automatically install most dependencies. 
 
 ## Getting Started
 
@@ -46,6 +49,12 @@ To make your YML file from user input do
  
  Thanks for using our package!
 
+## Potential Docker Issue
+ 
+ This package requires docker to be installed and running. If one runs into a "docker mount denied" error, simply to go 
+ Docker -> Preferences -> File Sharing and allow Docker to mount the pydproc/saved_data folder. All our API data is stored in 
+ the saved_data folder, so Docker needs permission to mount this file.
+ 
 ## Contributing
 
 Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduct, and the process for submitting pull requests to us.
