@@ -31,11 +31,11 @@ To make your YML file from user input do
  
  Commands such as start, stop, restart, and remove follow the format of 
  
-    pydproc $COMMAND $DATA_FILE_NAME
+    pydproc $COMMAND $PROC_NAME
  
  API data is stored in a saved_data folder. To copy data from a certain file to a destination on your local machine,
  
-    pydproc get-data $FILE_PATH $DESTINATION_PATH
+    pydproc get-data $RUN_NAME $DESTINATION_PATH
     
  For more information do
  
